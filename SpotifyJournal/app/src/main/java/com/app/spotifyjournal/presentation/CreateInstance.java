@@ -1,36 +1,20 @@
 package com.app.spotifyjournal.presentation;
 
-import android.app.Application;
+import android.util.Log;
 
-import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.rpc.ApiException;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.compute.v1.AttachedDisk;
-import com.google.cloud.compute.v1.AttachedDisk.Type;
 import com.google.cloud.compute.v1.AttachedDiskInitializeParams;
 import com.google.cloud.compute.v1.InsertInstanceRequest;
 import com.google.cloud.compute.v1.Instance;
 import com.google.cloud.compute.v1.InstancesClient;
+import com.google.cloud.compute.v1.InstancesSettings;
 import com.google.cloud.compute.v1.NetworkInterface;
 import com.google.cloud.compute.v1.Operation;
-import com.google.api.gax.core.FixedCredentialsProvider;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.compute.v1.InstancesSettings;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-
-import com.google.auth.oauth2.ServiceAccountCredentials;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.io.InputStream;
-
-import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.compute.v1.*;
-import com.google.api.gax.rpc.ApiException;
-
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public class CreateInstance {
@@ -38,7 +22,8 @@ public class CreateInstance {
     }
 
     public void createInstanceWithKey(String projectId, String zone, String instanceName,
-                                      String machineType, String sourceImage, InputStream keyFilePath) throws IOException, InterruptedException, ExecutionException {
+                                      String machineType, String sourceImage, InputStream keyFilePath)
+            throws IOException, InterruptedException, ExecutionException {
         ServiceAccountCredentials credentials = ServiceAccountCredentials
                 .fromStream(keyFilePath);
 
@@ -46,6 +31,21 @@ public class CreateInstance {
                 InstancesSettings.newBuilder()
                         .setCredentialsProvider(() -> credentials)
                         .build())) {
+
+            // Check if the instance already exists
+            try {
+                Instance existingInstance = instancesClient.get(projectId, zone, instanceName);
+                Log.w("Already created", "Instance already exists: " + instanceName);
+                return;
+            }
+            catch (ApiException e) {
+                if (e.getStatusCode().getCode().name().equals("NOT_FOUND")) {
+                    Log.w("Will create", "Instance does not exist. Proceeding with creation...");
+                }
+                else {
+                    throw e;
+                }
+            }
 
             String machineTypeUrl = String.format(
                     "zones/%s/machineTypes/%s", zone, machineType);
@@ -88,5 +88,4 @@ public class CreateInstance {
 
         keyFilePath.close();
     }
-
 }
