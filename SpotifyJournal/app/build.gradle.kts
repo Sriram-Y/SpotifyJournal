@@ -36,10 +36,17 @@ android {
     buildFeatures {
         compose = true
     }
+
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
+    }
+
 }
 
 dependencies {
-
+    implementation("com.google.android.gms:play-services-wearable:+")
+    implementation("com.google.cloud:google-cloud-compute:+") // For Compute Engine API
+    implementation("com.google.auth:google-auth-library-credentials:+")
     implementation(libs.play.services.wearable)
     implementation(platform(libs.compose.bom))
     implementation(libs.ui)
