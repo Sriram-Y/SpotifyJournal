@@ -41,12 +41,20 @@ android {
         resources.excludes.add("META-INF/*")
     }
 
+    tasks.withType<JavaCompile>().configureEach {
+        options.compilerArgs.add("-Xlint:deprecation")
+    }
+
 }
 
 dependencies {
     implementation("com.google.android.gms:play-services-wearable:+")
     implementation("com.google.cloud:google-cloud-compute:+") // For Compute Engine API
     implementation("com.google.auth:google-auth-library-credentials:+")
+    implementation("com.google.apis:google-api-services-compute:+") // Add Google Compute Engine API
+    implementation("com.google.android.gms:play-services-fitness:+")
+    implementation("com.google.android.gms:play-services-auth:+")
+    implementation("com.google.cloud:google-cloud-storage:+")
     implementation(libs.play.services.wearable)
     implementation(platform(libs.compose.bom))
     implementation(libs.ui)
@@ -69,3 +77,4 @@ dependencies {
     debugImplementation(libs.ui.test.manifest)
     debugImplementation(libs.tiles.tooling)
 }
+

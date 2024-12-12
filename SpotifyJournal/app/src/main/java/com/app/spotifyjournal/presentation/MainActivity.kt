@@ -1,8 +1,12 @@
 package com.app.spotifyjournal.presentation
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.wear.compose.material.MaterialTheme
@@ -23,15 +29,30 @@ import com.app.spotifyjournal.presentation.theme.SpotifyJournalTheme
 import java.io.InputStream
 
 class MainActivity : ComponentActivity() {
+
+    private val permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                startBackgroundService()
+            } else {
+                // Handle permission denial
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-
         super.onCreate(savedInstanceState)
 
         setTheme(android.R.style.Theme_DeviceDefault)
 
         setContent {
             WearApp("Android")
+        }
+
+        if (isPermissionGranted()) {
+            startBackgroundService()
+        } else {
+            requestBodySensorsPermission()
         }
 
         val projectId = "spotify-journal"
@@ -75,6 +96,28 @@ class MainActivity : ComponentActivity() {
             sourceImage,
             peKeyFileInputStream
         )   // prediction engine vm
+    }
+
+    private fun isPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.BODY_SENSORS
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestBodySensorsPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.BODY_SENSORS
+            )
+        ) {
+        }
+        permissionLauncher.launch(Manifest.permission.BODY_SENSORS)
+    }
+
+    private fun startBackgroundService() {
+        val serviceIntent = Intent(this, BackgroundService::class.java)
+        startForegroundService(serviceIntent)
     }
 }
 
