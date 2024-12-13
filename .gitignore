@@ -3,3 +3,5 @@ scripts/include/python3.12
 scripts/lib
 scripts/pyvenv.cfg
 scripts/service_account_key.json
+scripts/user_cred.py
+scripts/.cache
