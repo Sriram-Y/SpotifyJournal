@@ -51,6 +51,7 @@ def check_bucket_entries_spotify(bucket_name, service_account_file):
             print(f"The last file ('{last_blob.name}') is not a text file.")
     else:
         print(f"The bucket '{bucket_name}' has {len(blobs)} entries.")
+        # TODO: Run a file: /home/srya8501/get-spotify-data.py on the vm called sdc-vm
 
 def main():
     service_account_file = "service_account_key.json"
