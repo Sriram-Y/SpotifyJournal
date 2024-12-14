@@ -26,7 +26,7 @@
 - WearOS Application (Java/Kotlin)
 
 ## Architectural Diagram
-- 
+![Architecture Diagram](architecture_diagram_final.png)
 
 ## Debugging/Testing
 - Android Studio device emulator
