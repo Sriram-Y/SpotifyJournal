@@ -1,7 +1,7 @@
 from google.cloud import storage
 from google.cloud import compute_v1
 import re
-import subprocess
+import time
 
 def get_last_timestamp_entry(contents):
     """Extract and print the highest timestamp and value from file contents."""
@@ -29,6 +29,7 @@ def check_bucket_entries_fitness(bucket_name, service_account_file):
             print(f"Processing the last file in bucket '{bucket_name}': {last_blob.name}")
             contents = last_blob.download_as_text()
             get_last_timestamp_entry(contents)
+            return True
         else:
             print(f"The last file ('{last_blob.name}') is not a text file.")
     else:
@@ -77,15 +78,19 @@ def check_bucket_entries_spotify(bucket_name, service_account_file):
             print(f"The last file ('{last_blob.name}') is not a text file.")
     else:
         print(f"The bucket '{bucket_name}' has {len(blobs)} entries.")
-        
-        # TODO: Run the file at /home/srya8501/get-spotify-data.py on the VM 'sdc-vm'
         run_script_on_vm()
+        return True
 
 def main():
     service_account_file = "service_account_key.json"
-    
-    check_bucket_entries_fitness("fitness-data-bucket", service_account_file)
-    check_bucket_entries_spotify("spotify-user-data-bucket", service_account_file)
+
+    while True:
+        if check_bucket_entries_spotify("fitness-data-bucket", service_account_file) and check_bucket_entries_spotify("spotify-user-data-bucket", service_account_file):
+            print("Both buckets have the data.")
+        else:
+            print("One of the buckets is still waiting for data")
+        print("Continuing to monitor buckets...")
+        time.sleep(10)
 
 if __name__ == "__main__":
     main()
